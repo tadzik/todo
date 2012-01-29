@@ -1,0 +1,51 @@
+#!/usr/bin/env perl6
+use Term::ANSIColor;
+
+my @tasks;
+my $yay = colored('√', 'green');
+my $nay = colored('✖', 'red');
+
+INIT {
+    @tasks = lines(slurp('tasks')).map: {
+        next if $_ eq '';
+        $_.substr(1) => ($_.substr(0, 1) eq '+')
+    }
+}
+
+multi MAIN(*@words) {
+    @tasks.push: @words.join(' ') => 0;
+}
+
+multi MAIN('rm', Int $which) {
+    @tasks.splice($which, 1);
+}
+
+multi MAIN('ls', Bool :$all) {
+    for @tasks.kv -> $i, $t {
+        if $all or !$t.value {
+            say "#$i {$t.value ?? $yay !! $nay} {$t.key}"
+        }
+    }
+}
+
+multi MAIN('check', Int $which) {
+    @tasks[$which].value = 1
+}
+
+multi MAIN('undo', Int $which) {
+    @tasks[$which].value = 0
+}
+
+multi MAIN('clear') {
+    @tasks = ();
+}
+
+END {
+    my $repr = @tasks.map({
+        ($_.value ?? '+' !! '-') ~ $_.key
+    }).join("\n");
+    given open 'tasks', :w {
+        .say($repr);
+        .close;
+    }
+}
