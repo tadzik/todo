@@ -12,14 +12,17 @@ INIT {
     }
 }
 
+#= add a new TODO item
 multi MAIN(*@words) {
     @tasks.push: @words.join(' ') => 0;
 }
 
+#= remove an item at the desired index
 multi MAIN('rm', Int $which) {
     @tasks.splice($which, 1);
 }
 
+#= list [--all] items (only the incomplete ones by default)
 multi MAIN('ls', Bool :$all) {
     for @tasks.kv -> $i, $t {
         if $all or !$t.value {
@@ -28,14 +31,17 @@ multi MAIN('ls', Bool :$all) {
     }
 }
 
+#= mark an item as done
 multi MAIN('check', Int $which) {
     @tasks[$which].value = 1
 }
 
+#= mark an item as undone
 multi MAIN('undo', Int $which) {
     @tasks[$which].value = 0
 }
 
+#= clear the list
 multi MAIN('clear') {
     @tasks = ();
 }
